@@ -22,7 +22,12 @@ variable "instance_type" {
 
 variable "ami" {
   description = "The Amazon Machine Image for the instance"
-  default = "ami-6d9a8707"
+  default = "ami-04169656fea786776"
+}
+
+variable "server_port" {
+  description = "The server port to use for the basic web server"
+  default = 8080
 }
 
 # Set up the provider - the service to deploy infrastructure to
@@ -36,12 +41,13 @@ resource "aws_instance" "tf-basic-instance" {
   # Just a random Linux AMI I found on the Amazon AMI Marketplace
   ami = "${var.ami}"
   instance_type = "${var.instance_type}"
+  vpc_security_group_ids = ["${aws_security_group.instance_security.id}"]
 
   # Define user_data which will execute while the instance is booting up
   user_data = <<-EOF
               #!/bin/bash
               echo "Hello From Terraform" > index.html
-              nohup busybox httpd -f -p 8080 &
+              nohup busybox httpd -f -p "${var.server_port}" &
               EOF
 
   tags {
@@ -59,7 +65,27 @@ resource "aws_eip" "tf-instance-ip" {
   depends_on = ["aws_instance.tf-basic-instance"]
 }
 
+# Creates a new security group for the EC2 instance - this is necessary because EC2 instances
+# do not allow incoming traffic by default
+resource "aws_security_group" "instance_security" {
+  name = "tf-basic-instance"
+
+  # Handle incomming traffic
+  ingress {
+    from_port = "${var.server_port}"
+    to_port = "${var.server_port}"
+    protocol = "tcp"
+
+    # IP Range - allow all incomming IP addresses
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 # Define output variables which will be listed after terraform changes are applied
 output "public_ip" {
   value = "${aws_instance.tf-basic-instance.public_ip}"
+}
+
+output "elastic_ip" {
+  value = "${aws_eip.tf-instance-ip.public_ip}"
 }
