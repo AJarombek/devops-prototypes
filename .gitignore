@@ -1,4 +1,5 @@
 
-terraform/.terraform/*
+terraform/helloworld/.terraform/*
+terraform/awslambda/.terraform/*
 .idea/*
 terraform/terraform.tfstate.backup

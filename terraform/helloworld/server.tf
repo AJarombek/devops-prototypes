@@ -38,7 +38,6 @@ provider "aws" {
 # Each provider has a bunch of different resources that you can create
 # the aws_instance resource creates a new EC2 instance on AWS
 resource "aws_instance" "tf-basic-instance" {
-  # Just a random Linux AMI I found on the Amazon AMI Marketplace
   ami = "${var.ami}"
   instance_type = "${var.instance_type}"
   vpc_security_group_ids = ["${aws_security_group.instance_security.id}"]
