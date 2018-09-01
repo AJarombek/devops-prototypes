@@ -30,3 +30,20 @@ resource "aws_iam_role" "lambda-role" {
   name = "iam-lambda-role"
   assume_role_policy = "${file("lambdaRole.json")}"
 }
+
+resource "aws_api_gateway_rest_api" "roman-numeral-api" {
+  # The name of the REST API
+  name = "RomanNumeralAPI"
+
+  # An optional description of the REST API
+  description = "A Prototype REST API for Converting Integers to Roman Numerals"
+}
+
+resource "aws_api_gateway_resource" "roman-numeral-api-resource" {
+  # The id of the associated REST API and parent API resource are required
+  rest_api_id = "${aws_api_gateway_rest_api.roman-numeral-api.id}"
+  parent_id = "${aws_api_gateway_rest_api.roman-numeral-api.root_resource_id}"
+
+  # The last segment of the URL path for this API resource
+  path_part = "roman-numeral"
+}

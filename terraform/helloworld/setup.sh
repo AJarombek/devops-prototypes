@@ -21,3 +21,6 @@ terraform plan
 
 # Execute the terraform files
 terraform apply
+
+# Destroy all Infrastructure created with Terraform
+terraform destroy
