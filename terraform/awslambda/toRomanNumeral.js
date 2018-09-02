@@ -8,5 +8,13 @@ exports.handler = (event, context, callback) => {
 
     const resp = "Hello";
 
-    callback(null, resp);
+    // The entire response object must be returned - otherwise API Gateway will complain
+    // about a malformed Lambda proxy response - https://bit.ly/2oAk52G
+    callback(null, {
+        statusCode: '200',
+        body: JSON.stringify({'response': resp}),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
 };

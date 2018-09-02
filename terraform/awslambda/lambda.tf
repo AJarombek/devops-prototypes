@@ -37,10 +37,37 @@ resource "aws_lambda_function" "to-roman-numberal-js" {
   source_code_hash = "${base64sha256(file("${data.archive_file.lambda.output_path}"))}"
 }
 
-# Create an IAM policy for the lambda function
+# Set permissions on the lambda function, allowing API Gateway to invoke the function
+resource "aws_lambda_permission" "allow_api_gateway" {
+  # The action this permission allows is to invoke the function
+  action = "lambda:InvokeFunction"
+
+  # The name of the lambda function to attach this permission to
+  function_name = "${aws_lambda_function.to-roman-numberal-js.arn}"
+
+  # An optional identifier for the permission statement
+  statement_id = "AllowExecutionFromApiGateway"
+
+  # The item that is getting this lambda permission
+  principal = "apigateway.amazonaws.com"
+
+  # /*/*/* sets this permission for all stages, methods, and resource paths in API Gateway to the lambda
+  # function. - https://bit.ly/2NbT5V5
+  source_arn = "${aws_api_gateway_rest_api.roman-numeral-api.execution_arn}/*/*/*"
+}
+
+# Create an IAM role for the lambda function
 resource "aws_iam_role" "lambda-role" {
   name = "iam-lambda-role"
   assume_role_policy = "${file("lambdaRole.json")}"
+}
+
+# Create an IAM policy for a role
+# This isnt necessary for the current configuration, although it is good to see how a policy can be attached
+resource "aws_iam_role_policy" "lambda-policy" {
+  name = "iam-lambda-policy"
+  role = "${aws_iam_role.lambda-role.id}"
+  policy = "${file("lambdaPolicy.json")}"
 }
 
 # Declare a new API Gateway REST API
@@ -94,7 +121,7 @@ resource "aws_api_gateway_integration" "lambda-api-integration" {
   # AWS_PROXY is used for Lambda proxy integration - https://bit.ly/2wy8R2S
   type = "AWS_PROXY"
 
-  # The URI ay which the API is invoked
+  # The URI at which the API is invoked
   uri = "${aws_lambda_function.to-roman-numberal-js.invoke_arn}"
 
   # Lambda functions can only be invoked via HTTP POST - https://amzn.to/2owMYNh
