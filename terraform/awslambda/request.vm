@@ -1,0 +1,14 @@
+#**
+ * Author: Andrew Jarombek
+ * Date: 9/2/2018
+ * HTTP Request for the roman-numeral/{integer} REST endpoint which
+ * calls the romanNumeral Lambda function
+ *#
+
+#set($integer = $input.params('integer'))
+
+{
+    #if($integer != "")
+        "integer": "$integer"
+    #end
+}

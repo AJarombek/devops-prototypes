@@ -118,14 +118,41 @@ resource "aws_api_gateway_integration" "lambda-api-integration" {
   # The HTTP method to integrate with the Lambda function
   http_method = "${aws_api_gateway_method.integer-to-roman-numeral-method.http_method}"
 
-  # AWS_PROXY is used for Lambda proxy integration - https://bit.ly/2wy8R2S
-  type = "AWS_PROXY"
+  # AWS is used for Lambda proxy integration when you want to use a Velocity template
+  type = "AWS"
 
   # The URI at which the API is invoked
   uri = "${aws_lambda_function.to-roman-numberal-js.invoke_arn}"
 
   # Lambda functions can only be invoked via HTTP POST - https://amzn.to/2owMYNh
   integration_http_method = "POST"
+
+  # Configure the Velocity request template for the application/json MIME type
+  request_templates {
+    "application/json" = "${file("request.vm")}"
+  }
+}
+
+# Create an HTTP method response for the aws lambda integration
+resource "aws_api_gateway_method_response" "lambda-api-method-response" {
+  rest_api_id = "${aws_api_gateway_rest_api.roman-numeral-api.id}"
+  resource_id = "${aws_api_gateway_resource.integer-api-resource.id}"
+  http_method = "${aws_api_gateway_method.integer-to-roman-numeral-method.http_method}"
+  status_code = "200"
+}
+
+# Configure the API Gateway and Lambda functions response
+resource "aws_api_gateway_integration_response" "lambda-api-integration-response" {
+  rest_api_id = "${aws_api_gateway_rest_api.roman-numeral-api.id}"
+  resource_id = "${aws_api_gateway_resource.integer-api-resource.id}"
+  http_method = "${aws_api_gateway_method.integer-to-roman-numeral-method.http_method}"
+
+  status_code = "${aws_api_gateway_method_response.lambda-api-method-response.status_code}"
+
+  # Configure the Velocity response template for the application/json MIME type
+  response_templates {
+    "application/json" = "${file("response.vm")}"
+  }
 }
 
 # Create a new API Gateway deployment

@@ -1,0 +1,9 @@
+#set($response = $input.path('$.body.response'))
+
+{
+    #if($response != "")
+        "romanNumeral": "$response"
+    #else
+        "error": "failed converting to roman numeral"
+    #end
+}
