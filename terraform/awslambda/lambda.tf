@@ -153,6 +153,11 @@ resource "aws_api_gateway_integration_response" "lambda-api-integration-response
   response_templates {
     "application/json" = "${file("response.vm")}"
   }
+
+  # Remove race condition where the integration response is built before the lambda integration
+  depends_on = [
+    "aws_api_gateway_integration.lambda-api-integration"
+  ]
 }
 
 # Create a new API Gateway deployment
@@ -164,7 +169,8 @@ resource "aws_api_gateway_deployment" "roman-numeral-api-dev-deployment" {
 
   # Remove race conditions - deployment should always occur after lambda integration
   depends_on = [
-    "aws_api_gateway_integration.lambda-api-integration"
+    "aws_api_gateway_integration.lambda-api-integration",
+    "aws_api_gateway_integration_response.lambda-api-integration-response"
   ]
 }
 
