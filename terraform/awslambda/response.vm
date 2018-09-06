@@ -4,7 +4,7 @@
  * HTTP Response for the roman-numeral/{integer} REST endpoint
  *#
 
-#set($response = $input.path('$.body.response'))
+#set($response = $input.path('$'))
 
 {
 #if($response != "")

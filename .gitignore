@@ -5,3 +5,9 @@ terraform/awslambda/.terraform/*
 terraform/terraform.tfstate.backup
 
 terraform/awslambda/terraform.tfstate.backup
+
+terraform/s3/terraform.tfstate.backup
+
+terraform/s3/.terraform/plugins/darwin_amd64/terraform-provider-aws_v1.34.0_x4
+
+terraform/s3/.terraform/plugins/darwin_amd64/lock.json

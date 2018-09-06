@@ -6,18 +6,11 @@
 
 exports.handler = (event, context, callback) => {
 
-    console.info(event);
     const romanNumeral = toRomanNumeral(event.integer);
 
     // The entire response object must be returned - otherwise API Gateway will complain
     // about a malformed Lambda proxy response - https://bit.ly/2oAk52G
-    callback(null, {
-        statusCode: '200',
-        body: {'response': romanNumeral},
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    });
+    callback(null, romanNumeral);
 };
 
 const toRomanNumeral = (int) => {
