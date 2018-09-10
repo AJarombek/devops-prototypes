@@ -16,6 +16,7 @@ job("Seed_Job") {
         // (2) -> the default value of the parameter.  Defaults to null.
         // (3) -> the description of the parameter which will be displayed in Jenkins.
         stringParam("job_dsl_repo", "", "Job DSL Repo")
+        stringParam("job_dsl_branch", "", "Job DSL Branch")
         stringParam("job_dsl_path", "", "Location of Job DSL Groovy Script")
     }
 
@@ -24,7 +25,7 @@ job("Seed_Job") {
         // In my case, I use Git
         git {
             // From the repository specified in one of the Jenkins job parameters, checkout from the master branch
-            branch("master")
+            branch("\$job_dsl_branch")
             remote {
                 name("origin")
                 url("\$job_dsl_repo")
