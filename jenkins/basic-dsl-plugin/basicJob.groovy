@@ -12,7 +12,7 @@ pipelineJob("Hello_World") {
         cpsScm {
             scm {
                 git {
-                    branch("master")
+                    branch("jenkins-testing")
                     remote {
                         name("origin")
                         url("https://github.com/AJarombek/devops-prototypes.git")
