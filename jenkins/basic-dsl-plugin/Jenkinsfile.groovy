@@ -11,8 +11,11 @@ node("master") {
             pwd
             ls -la
             ls -la ../
+            ls -la ../Hello_World/
+            ls -la ../Hello_World@script/
+            ls -la ../Hello_World@tmp/
         """
 
-        sh "./jenkins/basic-dsl-plugin/script.sh"
+        sh "../Hello_World/jenkins/basic-dsl-plugin/script.sh"
     }
 }
