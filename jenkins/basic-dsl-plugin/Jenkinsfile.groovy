@@ -6,6 +6,13 @@
 
 node("master") {
     stage("Execute Bash Script") {
+
+        sh """
+            pwd
+            ls -la
+            ls -la ../
+        """
+
         sh "./jenkins/basic-dsl-plugin/script.sh"
     }
 }
