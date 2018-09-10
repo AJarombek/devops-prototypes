@@ -15,7 +15,10 @@ node("master") {
             ls -la ../Hello_World@script/
             ls -la ../Hello_World@tmp/
         """
-
-        sh "sudo ../Hello_World@script/jenkins/basic-dsl-plugin/script.sh"
+        
+        sh """
+            chmod +x ../Hello_World@script/jenkins/basic-dsl-plugin/script.sh
+            ../Hello_World@script/jenkins/basic-dsl-plugin/script.sh
+        """
     }
 }
