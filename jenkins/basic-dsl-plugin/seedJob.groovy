@@ -27,7 +27,7 @@ job("Seed_Job") {
             branch("master")
             remote {
                 name("origin")
-                url("$job_dsl_repo")
+                url("\$job_dsl_repo")
             }
         }
     }
@@ -38,7 +38,7 @@ job("Seed_Job") {
         // Add a Job DSL Plugin step to the freestyle job.  This step runs a Groovy script to build Jenkins jobs.
         dsl {
             // Read the Groovy script to build Jenkins job from the Jenkins workspace
-            external("$job_dsl_path")
+            external("\$job_dsl_path")
         }
     }
 }
