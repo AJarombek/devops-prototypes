@@ -16,6 +16,6 @@ node("master") {
             ls -la ../Hello_World@tmp/
         """
 
-        sh "../Hello_World/jenkins/basic-dsl-plugin/script.sh"
+        sh "../Hello_World@script/jenkins/basic-dsl-plugin/script.sh"
     }
 }
