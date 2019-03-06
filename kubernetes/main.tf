@@ -27,6 +27,18 @@ data "aws_vpc" "sandbox-vpc" {
   }
 }
 
+data "aws_subnet" "sandbox-subnet-0" {
+  tags {
+    Name = "Sandbox Subnet 0"
+  }
+}
+
+data "aws_subnet" "sandbox-subnet-1" {
+  tags {
+    Name = "Sandbox Subnet 1"
+  }
+}
+
 #-----------------------------
 # New AWS CloudFormation Stack
 #-----------------------------
@@ -38,7 +50,7 @@ resource "aws_cloudformation_stack" "eks-cf-stack" {
   timeout_in_minutes = 20
 
   parameters {
-    vpcId = "${data.aws_vpc.sandbox-vpc.id}"
+    VpcId = "${data.aws_vpc.sandbox-vpc.id}"
   }
 
   tags {

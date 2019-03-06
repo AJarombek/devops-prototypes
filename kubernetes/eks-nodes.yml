@@ -1,0 +1,20 @@
+# CloudFormation template for the Elastic Container Service for Kubernetes (EKS) Nodes.
+# Parameters are supplied by Terraform.
+# Author: Andrew Jarombek
+# Date: 3/6/2019
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Elastic Container Service for Kubernetes (EKS) Nodes Setup'
+
+Metadata:
+
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    -
+      Label:
+        default: "Terraform AWS Data"
+      Parameters:
+      - VpcId
+    ParameterLabels:
+      VpcId:
+        default: "VPC to deploy the EKS Nodes in"
