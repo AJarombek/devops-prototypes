@@ -23,3 +23,88 @@ Metadata:
 
 Resources:
 
+ # Create an EC2 instance for Docker testing running Amazon Linux 2
+  DockerPlaygroundInstance:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          default:
+            - "installDocker"
+        installDocker:
+          commands:
+            downloadDocker:
+              command: wget -qO- https://get.docker.com/ | sh
+              cwd: "~"
+            changeDockerUnixGroup:
+              command: sudo usermod -aG docker ec2-user
+            testDockerUnixGroup:
+              command: cat /etc/group | grep ec2-user
+            testDocker:
+              command: docker --version
+            getDockerInfo:
+              command: docker system info
+    Properties:
+      # us-east-1 Amazon Linux 2
+      ImageId: "ami-035be7bafff33b6b6"
+      InstanceType: "t2.micro"
+      KeyName: "sandbox-docker-playground-key"
+      SubnetId: !Ref SubnetId
+      SecurityGroups:
+        - !Ref DockerPlaygroundSecurityGroup
+      UserData:
+      Tags:
+        -
+          Key: Name
+          Value: docker-playground-instance
+
+  DockerPlaygroundSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "sandbox-docker-security-group"
+      GroupDescription: "Security Group for the Docker Playground Instance"
+      VpcId: !Ref VpcId
+      Tags:
+        -
+          Key: Name
+          Value: sandbox-docker-security-group
+
+  # Docker Playground security group rule allowing my computer to connect to the instance via SSH
+  DockerPlaygroundSecurityGroupIngressSSH:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupName: !Ref DockerPlaygroundSecurityGroup
+      IpProtocol: tcp
+      ToPort: 22
+      FromPort: 22
+      CidrIp: !Ref MyCidr
+
+  # Docker Playground security group rule allowing inbound traffic for ping
+  DockerPlaygroundSecurityGroupIngressICMP:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupName: !Ref DockerPlaygroundSecurityGroup
+      IpProtocol: icmp
+      ToPort: -1
+      FromPort: -1
+      CidrIp: !Ref PublicCidr
+
+  # Docker Playground security group rule allowing outbound internet access over HTTP
+  DockerPlaygroundSecurityGroupEgressHTTP:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupName: !Ref DockerPlaygroundSecurityGroup
+      IpProtocol: tcp
+      ToPort: 80
+      FromPort: 80
+      CidrIp: !Ref PublicCidr
+
+  # Docker Playground security group rule allowing outbound internet access over HTTPS
+  DockerPlaygroundSecurityGroupEgressHTTPS:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupName: !Ref DockerPlaygroundSecurityGroup
+      IpProtocol: tcp
+      ToPort: 443
+      FromPort: 443
+      CidrIp: !Ref PublicCidr

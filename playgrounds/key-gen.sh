@@ -9,4 +9,4 @@
 # Author: Andrew Jarombek
 # Date: 3/10/2019
 
-bash <(curl -s global.jarombek.io/aws-key-gen.sh)
+bash <(curl -s global.jarombek.io/aws-key-gen.sh) $1
