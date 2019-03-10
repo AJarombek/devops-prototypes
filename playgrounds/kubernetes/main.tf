@@ -23,13 +23,23 @@ terraform {
 
 data "aws_vpc" "sandbox-vpc" {
   tags {
-    Name = "Sandbox VPC"
+    Name = "sandbox-vpc"
   }
 }
 
 data "aws_subnet" "sandbox-subnet" {
   tags {
-    Name = "fearless-sandbox-public-subnet"
+    Name = "sandbox-vpc-fearless-public-subnet"
+  }
+}
+
+#--------------------------------------
+# Executed Before Resources are Created
+#--------------------------------------
+
+resource "null_resource" "key-gen" {
+  provisioner "local-exec" {
+    command = "bash key-gen.sh"
   }
 }
 
@@ -51,4 +61,6 @@ resource "aws_cloudformation_stack" "kubernetes-playground-cf-stack" {
   tags {
     Name = "kubernetes-playground-cf-stack"
   }
+
+  depends_on = ["null_resource.key-gen"]
 }

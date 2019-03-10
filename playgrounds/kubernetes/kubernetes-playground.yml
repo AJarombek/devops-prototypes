@@ -1,0 +1,6 @@
+# CloudFormation template for the Kubernetes playground instance.  Parameters are supplied by Terraform.
+# Author: Andrew Jarombek
+# Date: 3/10/2019
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Playground EC2 instance for testing Kubernetes'

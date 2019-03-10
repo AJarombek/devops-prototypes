@@ -1,0 +1,25 @@
+# CloudFormation template for the Docker playground instance.  Parameters are supplied by Terraform.
+# Author: Andrew Jarombek
+# Date: 3/9/2019
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Playground EC2 instance for testing Docker'
+
+Metadata:
+
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    -
+      Label:
+        default: "Terraform AWS Data"
+      Parameters:
+      - VpcId
+      - SubnetId
+    ParameterLabels:
+      VpcId:
+        default: "VPC to deploy the EC2 instance in"
+      SubnetId:
+        default: "Subnet to deploy the EC2 instance in"
+
+Resources:
+
