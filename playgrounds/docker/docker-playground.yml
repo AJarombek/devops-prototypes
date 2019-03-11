@@ -52,22 +52,23 @@ Resources:
           default:
             - "installDocker"
         installDocker:
+          # Commands are executed in alphabetical order
           commands:
-            begin:
+            00Begin:
               command: echo "Beginning Install Docker Step (CF::Init)"
-            updatePackages:
+            01UpdatePackages:
               command: sudo yum update -y
-            installDocker:
+            02InstallDocker:
               command: sudo amazon-linux-extras install docker
-            startDocker:
+            03StartDocker:
               command: sudo service docker start
-            changeDockerUnixGroup:
+            04ChangeDockerUnixGroup:
               command: sudo usermod -a -G docker ec2-user
-            testDocker:
+            05TestDocker:
               command: docker --version
-            getDockerInfo:
+            06GetDockerInfo:
               command: docker system info
-            end:
+            07End:
               command: echo "Finishing Install Docker Step (CF::Init)"
     Properties:
       # us-east-1 Amazon Linux 2
@@ -93,6 +94,7 @@ Resources:
           Key: Name
           Value: docker-playground-instance
 
+  # Security group for the Docker playground
   DockerPlaygroundSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:

@@ -40,3 +40,93 @@ Metadata:
         default: "CIDR for my local environment"
       PublicCidr:
         default: "CIDR for all IP addresses"
+
+Resources:
+
+ # Create an EC2 instance for Kubernetes testing running Amazon Linux 2
+  K8sPlaygroundInstance:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          default:
+            - "installK8s"
+        installK8s:
+          commands:
+            00Begin:
+              command: echo "Hello"
+    Properties:
+      # us-east-1 Amazon Linux 2
+      ImageId: "ami-035be7bafff33b6b6"
+      InstanceType: "t2.micro"
+      KeyName: "sandbox-kubernetes-playground-key"
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !Ref SubnetId
+          GroupSet:
+            - !Ref K8sPlaygroundSecurityGroup
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash
+            echo "Beginning UserData Step"
+            sudo yum install -y aws-cfn-bootstrap
+            /opt/aws/bin/cfn-init -v -s ${AWS::StackName} -r K8sPlaygroundInstance -c default --region ${AWS::Region}
+            echo "Finishing UserData Step"
+      Tags:
+        -
+          Key: Name
+          Value: kubernetes-playground-instance
+
+  # Security group for the Kubernetes playground
+  K8sPlaygroundSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "sandbox-kubernetes-security-group"
+      GroupDescription: "Security Group for the Kubernetes Playground Instance"
+      VpcId: !Ref VpcId
+      Tags:
+        -
+          Key: Name
+          Value: sandbox-kubernetes-security-group
+
+  # Kubernetes Playground security group rule allowing my computer to connect to the instance via SSH
+  K8sPlaygroundSecurityGroupIngressSSH:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref K8sPlaygroundSecurityGroup
+      IpProtocol: tcp
+      ToPort: 22
+      FromPort: 22
+      CidrIp: !Ref MyCidr
+
+  # Kubernetes Playground security group rule allowing inbound traffic for ping
+  K8sPlaygroundSecurityGroupIngressICMP:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref K8sPlaygroundSecurityGroup
+      IpProtocol: icmp
+      ToPort: -1
+      FromPort: -1
+      CidrIp: !Ref PublicCidr
+
+  # Kubernetes Playground security group rule allowing outbound internet access over HTTP
+  K8sPlaygroundSecurityGroupEgressHTTP:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref K8sPlaygroundSecurityGroup
+      IpProtocol: tcp
+      ToPort: 80
+      FromPort: 80
+      CidrIp: !Ref PublicCidr
+
+  # Kubernetes Playground security group rule allowing outbound internet access over HTTPS
+  K8sPlaygroundSecurityGroupEgressHTTPS:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref K8sPlaygroundSecurityGroup
+      IpProtocol: tcp
+      ToPort: 443
+      FromPort: 443
+      CidrIp: !Ref PublicCidr
