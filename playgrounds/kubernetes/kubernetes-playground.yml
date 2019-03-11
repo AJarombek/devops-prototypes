@@ -4,3 +4,39 @@
 
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Playground EC2 instance for testing Kubernetes'
+
+Parameters:
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: "VPC to deploy the Docker Playground in"
+  SubnetId:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: "Subnet to deploy the Docker Playground in"
+  MyCidr:
+    Type: "String"
+    Description: "CIDR for my local environment"
+  PublicCidr:
+    Type: "String"
+    Description: "CIDR for all IP addresses"
+
+Metadata:
+
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    -
+      Label:
+        default: "Terraform AWS Data"
+      Parameters:
+      - VpcId
+      - SubnetId
+      - MyCidr
+      - PublicCidr
+    ParameterLabels:
+      VpcId:
+        default: "VPC to deploy the EC2 instance in"
+      SubnetId:
+        default: "Subnet to deploy the EC2 instance in"
+      MyCidr:
+        default: "CIDR for my local environment"
+      PublicCidr:
+        default: "CIDR for all IP addresses"

@@ -5,6 +5,20 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Playground EC2 instance for testing Docker'
 
+Parameters:
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: "VPC to deploy the Docker Playground in"
+  SubnetId:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: "Subnet to deploy the Docker Playground in"
+  MyCidr:
+    Type: "String"
+    Description: "CIDR for my local environment"
+  PublicCidr:
+    Type: "String"
+    Description: "CIDR for all IP addresses"
+
 Metadata:
 
   AWS::CloudFormation::Interface:
@@ -15,11 +29,17 @@ Metadata:
       Parameters:
       - VpcId
       - SubnetId
+      - MyCidr
+      - PublicCidr
     ParameterLabels:
       VpcId:
         default: "VPC to deploy the EC2 instance in"
       SubnetId:
         default: "Subnet to deploy the EC2 instance in"
+      MyCidr:
+        default: "CIDR for my local environment"
+      PublicCidr:
+        default: "CIDR for all IP addresses"
 
 Resources:
 
@@ -33,26 +53,41 @@ Resources:
             - "installDocker"
         installDocker:
           commands:
-            downloadDocker:
-              command: wget -qO- https://get.docker.com/ | sh
-              cwd: "~"
+            begin:
+              command: echo "Beginning Install Docker Step (CF::Init)"
+            updatePackages:
+              command: sudo yum update -y
+            installDocker:
+              command: sudo amazon-linux-extras install docker
+            startDocker:
+              command: sudo service docker start
             changeDockerUnixGroup:
-              command: sudo usermod -aG docker ec2-user
-            testDockerUnixGroup:
-              command: cat /etc/group | grep ec2-user
+              command: sudo usermod -a -G docker ec2-user
             testDocker:
               command: docker --version
             getDockerInfo:
               command: docker system info
+            end:
+              command: echo "Finishing Install Docker Step (CF::Init)"
     Properties:
       # us-east-1 Amazon Linux 2
       ImageId: "ami-035be7bafff33b6b6"
       InstanceType: "t2.micro"
       KeyName: "sandbox-docker-playground-key"
-      SubnetId: !Ref SubnetId
-      SecurityGroups:
-        - !Ref DockerPlaygroundSecurityGroup
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !Ref SubnetId
+          GroupSet:
+            - !Ref DockerPlaygroundSecurityGroup
       UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash
+            echo "Beginning UserData Step"
+            sudo yum install -y aws-cfn-bootstrap
+            /opt/aws/bin/cfn-init -v -s ${AWS::StackName} -r DockerPlaygroundInstance -c default --region ${AWS::Region}
+            echo "Finishing UserData Step"
       Tags:
         -
           Key: Name
@@ -73,7 +108,7 @@ Resources:
   DockerPlaygroundSecurityGroupIngressSSH:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupName: !Ref DockerPlaygroundSecurityGroup
+      GroupId: !Ref DockerPlaygroundSecurityGroup
       IpProtocol: tcp
       ToPort: 22
       FromPort: 22
@@ -83,7 +118,7 @@ Resources:
   DockerPlaygroundSecurityGroupIngressICMP:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupName: !Ref DockerPlaygroundSecurityGroup
+      GroupId: !Ref DockerPlaygroundSecurityGroup
       IpProtocol: icmp
       ToPort: -1
       FromPort: -1
@@ -93,7 +128,7 @@ Resources:
   DockerPlaygroundSecurityGroupEgressHTTP:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
-      GroupName: !Ref DockerPlaygroundSecurityGroup
+      GroupId: !Ref DockerPlaygroundSecurityGroup
       IpProtocol: tcp
       ToPort: 80
       FromPort: 80
@@ -103,7 +138,7 @@ Resources:
   DockerPlaygroundSecurityGroupEgressHTTPS:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
-      GroupName: !Ref DockerPlaygroundSecurityGroup
+      GroupId: !Ref DockerPlaygroundSecurityGroup
       IpProtocol: tcp
       ToPort: 443
       FromPort: 443
