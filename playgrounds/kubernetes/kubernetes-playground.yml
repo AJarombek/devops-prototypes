@@ -18,6 +18,12 @@ Parameters:
   PublicCidr:
     Type: "String"
     Description: "CIDR for all IP addresses"
+  AMI:
+    Type: "String"
+    Description: "AMI for the EC2 instance"
+  UserData:
+    Type: "String"
+    Description: "UserData for bootstrapping the EC2 instance"
 
 Metadata:
 
@@ -31,6 +37,8 @@ Metadata:
       - SubnetId
       - MyCidr
       - PublicCidr
+      - AMI
+      - UserData
     ParameterLabels:
       VpcId:
         default: "VPC to deploy the EC2 instance in"
@@ -40,6 +48,10 @@ Metadata:
         default: "CIDR for my local environment"
       PublicCidr:
         default: "CIDR for all IP addresses"
+      AMI:
+        default: "AMI for the EC2 instance"
+      UserData:
+        default: "UserData for bootstrapping the EC2 instance"
 
 Resources:
 
@@ -50,14 +62,33 @@ Resources:
       AWS::CloudFormation::Init:
         configSets:
           default:
-            - "installK8s"
-        installK8s:
+            - "preReq"
+            - "install"
+        # Prerequisite commands which will allow us to install Docker & Kubernetes tools with Apt
+        preReq:
           commands:
-            00Begin:
-              command: echo "Hello"
+            00AptUpdate:
+              command: apt-get update && apt-get install -y apt-transport-https
+            01AptKey:
+              command: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+            02AptK8s:
+              command: |
+                cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+                deb http://apt.kubernetes.io/kubernetes-xenial main
+                EOF
+            03AptUpdate:
+              command: apt-get update
+        install:
+          commands:
+            # Using Apt, install Docker, kubeadm, kubectl, kubelet, and CNI (Container Network Interface)
+            00Install:
+              command: apt-get install docker.io kubeadm kubectl kubelet kubernetes-cni
+            # Run the same command to verify the installations
+            01Verify:
+              command: apt-get install docker.io kubeadm kubectl kubelet kubernetes-cni
     Properties:
-      # us-east-1 Amazon Linux 2
-      ImageId: "ami-035be7bafff33b6b6"
+      # us-east-1 Ubuntu
+      ImageId: !Ref AMI
       InstanceType: "t2.micro"
       KeyName: "sandbox-kubernetes-playground-key"
       NetworkInterfaces:
@@ -67,13 +98,7 @@ Resources:
           GroupSet:
             - !Ref K8sPlaygroundSecurityGroup
       UserData:
-        Fn::Base64:
-          !Sub |
-            #!/bin/bash
-            echo "Beginning UserData Step"
-            sudo yum install -y aws-cfn-bootstrap
-            /opt/aws/bin/cfn-init -v -s ${AWS::StackName} -r K8sPlaygroundInstance -c default --region ${AWS::Region}
-            echo "Finishing UserData Step"
+       Fn::Base64: !Ref UserData
       Tags:
         -
           Key: Name

@@ -26,6 +26,8 @@ terraform {
 # Existing AWS Resources
 #-----------------------
 
+data "aws_region" "current-region" {}
+
 data "aws_vpc" "sandbox-vpc" {
   tags {
     Name = "sandbox-vpc"
@@ -35,6 +37,35 @@ data "aws_vpc" "sandbox-vpc" {
 data "aws_subnet" "sandbox-subnet" {
   tags {
     Name = "sandbox-vpc-fearless-public-subnet"
+  }
+}
+
+data "template_file" "user-data-template" {
+  template = "${file("user-data.sh")}"
+
+  vars {
+    STACK_NAME = "kubernetes-playground-cf-stack"
+    REGION = "${data.aws_region.current-region.name}"
+  }
+}
+
+data "aws_ami" "ubuntu-ami" {
+  most_recent = true
+  owners = ["099720109477"]
+
+  filter {
+    name = "name"
+    values = ["ubuntu/images/*ubuntu-xenial-16.04-amd64-server-*"]
+  }
+
+  filter {
+    name = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name = "virtualization-type"
+    values = ["hvm"]
   }
 }
 
@@ -54,7 +85,7 @@ resource "null_resource" "key-gen" {
 
 resource "aws_cloudformation_stack" "kubernetes-playground-cf-stack" {
   name = "kubernetes-playground-cf-stack"
-  template_body = "${file("docker-playground.yml")}"
+  template_body = "${file("kubernetes-playground.yml")}"
   on_failure = "DELETE"
   timeout_in_minutes = 20
 
@@ -63,6 +94,8 @@ resource "aws_cloudformation_stack" "kubernetes-playground-cf-stack" {
     SubnetId = "${data.aws_subnet.sandbox-subnet.id}"
     MyCidr = "${local.my_cidr}"
     PublicCidr = "${local.public_cidr}"
+    AMI = "${data.aws_ami.ubuntu-ami.image_id}"
+    UserData = "${data.template_file.user-data-template.rendered}"
   }
 
   tags {
