@@ -74,7 +74,7 @@ Resources:
             02AptK8s:
               command: |
                 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
-                deb http://apt.kubernetes.io/kubernetes-xenial main
+                deb http://apt.kubernetes.io/ kubernetes-xenial main
                 EOF
             03AptUpdate:
               command: apt-get update
@@ -82,10 +82,10 @@ Resources:
           commands:
             # Using Apt, install Docker, kubeadm, kubectl, kubelet, and CNI (Container Network Interface)
             00Install:
-              command: apt-get install docker.io kubeadm kubectl kubelet kubernetes-cni
+              command: apt-get --assume-yes install docker.io kubeadm kubectl kubelet kubernetes-cni
             # Run the same command to verify the installations
             01Verify:
-              command: apt-get install docker.io kubeadm kubectl kubelet kubernetes-cni
+              command: apt-get --assume-yes install docker.io kubeadm kubectl kubelet kubernetes-cni
     Properties:
       # us-east-1 Ubuntu
       ImageId: !Ref AMI
