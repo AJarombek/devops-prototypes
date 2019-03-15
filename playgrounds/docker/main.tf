@@ -65,6 +65,8 @@ resource "aws_cloudformation_stack" "docker-playground-cf-stack" {
     PublicCidr = "${local.public_cidr}"
   }
 
+  capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]
+
   tags {
     Name = "docker-playground-cf-stack"
   }

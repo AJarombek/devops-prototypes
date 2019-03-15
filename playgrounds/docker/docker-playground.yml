@@ -51,6 +51,7 @@ Resources:
         configSets:
           default:
             - "installDocker"
+            - "installGit"
         installDocker:
           # Commands are executed in alphabetical order
           commands:
@@ -70,11 +71,16 @@ Resources:
               command: docker system info
             07End:
               command: echo "Finishing Install Docker Step (CF::Init)"
+        installGit:
+          commands:
+            00Install:
+              command: sudo yum -y install git
     Properties:
       # us-east-1 Amazon Linux 2
       ImageId: "ami-035be7bafff33b6b6"
       InstanceType: "t2.micro"
       KeyName: "sandbox-docker-playground-key"
+      IamInstanceProfile: !Ref DockerPlaygroundInstanceProfile
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
           DeviceIndex: 0
@@ -114,7 +120,7 @@ Resources:
       IpProtocol: tcp
       ToPort: 22
       FromPort: 22
-      CidrIp: !Ref MyCidr
+      CidrIp: !Ref PublicCidr
 
   # Docker Playground security group rule allowing inbound traffic for ping
   DockerPlaygroundSecurityGroupIngressICMP:
@@ -145,3 +151,56 @@ Resources:
       ToPort: 443
       FromPort: 443
       CidrIp: !Ref PublicCidr
+
+  # Docker Playground security group rule allowing inbound internet access over HTTP
+  DockerPlaygroundSecurityGroupIngressHTTP:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref DockerPlaygroundSecurityGroup
+      IpProtocol: tcp
+      ToPort: 80
+      FromPort: 80
+      CidrIp: !Ref PublicCidr
+
+  # Docker Playground security group rule allowing inbound internet access over HTTPS
+  DockerPlaygroundSecurityGroupIngressHTTPS:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref DockerPlaygroundSecurityGroup
+      IpProtocol: tcp
+      ToPort: 443
+      FromPort: 443
+      CidrIp: !Ref PublicCidr
+
+  # Create an Instance Profile which gives the Docker playground access to ECR (Elastic Container Registry)
+  DockerPlaygroundInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: "docker-playground-instance-profile"
+      Roles:
+        - !Ref DockerPlaygroundECRRole
+
+  # IAM role granting an EC2 instance access to ECR
+  DockerPlaygroundECRRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: "Allow"
+          Principal:
+            Service:
+            - "ec2.amazonaws.com"
+          Action:
+          - "sts:AssumeRole"
+      Path: "/sandbox/"
+      Policies:
+        -
+          PolicyName: "DockerPlaygroundECRRole"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action: "ecr:*"
+                Resource: "*"

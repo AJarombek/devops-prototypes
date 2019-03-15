@@ -9,3 +9,12 @@ npm i -S express
 
 # Start the application
 node main.js
+
+# Containerize the application
+docker image build -t nodejs-docker-app:latest .
+
+# Confirm that a new image was created
+docker image ls
+
+# Inspect the docker image with the Node.js app
+docker image inspect nodejs-docker-app:latest
