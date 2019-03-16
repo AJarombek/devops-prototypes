@@ -52,6 +52,9 @@ docker image push ${Repo}:latest
 # Next run the image, creating a container
 docker container run --name nodejs-app -p 80:3000 nodejs-docker-app:latest
 
+# Use the -d flag to run the container in the background
+docker container run -d --name nodejs-app -p 80:3000 nodejs-docker-app:latest
+
 # Prove that the container is created
 docker container ls
 docker container ls -a
@@ -60,4 +63,8 @@ docker container ls -a
 docker logs nodejs-app
 
 # Remove the container
+docker container stop nodejs-app
 docker container rm nodejs-app
+
+# Remove the image
+docker image rm nodejs-docker-app
