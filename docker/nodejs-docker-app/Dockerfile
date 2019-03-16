@@ -25,4 +25,4 @@ RUN npm install
 EXPOSE 3000
 
 # The 'ENTRYPOINT' instruction declares the main application that the container runs
-ENTRYPOINT ["node", "./app.js"]
+ENTRYPOINT ["node", "./main.js"]
