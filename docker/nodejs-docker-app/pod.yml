@@ -1,0 +1,29 @@
+# Create a Kubernetes configuration file for a single Pod
+# Author: Andrew Jarombek
+# Date: 3/19/2019
+
+# Version of the Kubernetes API.  Pods exist in the stable v1 version
+apiVersion: v1
+# What kind of object to deploy (in this case a Pod)
+kind: Pod
+# Metadata describing the Pod object
+metadata:
+  name: nodejs-app
+  labels:
+    zone: prod
+    version: v1.0.0
+    environment: sandbox
+spec:
+  containers:
+    # Unique name for the container in the pod
+  - name: nodejs-app
+    # Docker image to use for the container
+    image: 739088120071.dkr.ecr.us-east-1.amazonaws.com/nodejs-docker-app:latest
+    # Configure a network port for a container
+    ports:
+      # Port to expose on the container IP
+    - containerPort: 8080
+      # Port to expose on the Docker hosts IP
+      hostPort: 80
+      # Protocol defaults to TCP
+      protocol: TCP

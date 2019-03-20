@@ -63,7 +63,8 @@ Resources:
         configSets:
           default:
             - "preReq"
-            - "install"
+            - "installK8s"
+            - "installAWSCLI"
         # Prerequisite commands which will allow us to install Docker & Kubernetes tools with Apt
         preReq:
           commands:
@@ -78,7 +79,7 @@ Resources:
                 EOF
             03AptUpdate:
               command: apt-get update
-        install:
+        installK8s:
           commands:
             # Using Apt, install Docker, kubeadm, kubectl, kubelet, and CNI (Container Network Interface)
             00Install:
@@ -86,10 +87,15 @@ Resources:
             # Run the same command to verify the installations
             01Verify:
               command: apt-get --assume-yes install docker.io kubeadm kubectl kubelet kubernetes-cni
+        installAWSCLI:
+          commands:
+            00Install:
+              command: apt-get install -y awscli
     Properties:
       # us-east-1 Ubuntu
       ImageId: !Ref AMI
       InstanceType: "t2.micro"
+      IamInstanceProfile: !Ref K8sPlaygroundInstanceProfile
       KeyName: "sandbox-kubernetes-playground-key"
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
@@ -155,3 +161,36 @@ Resources:
       ToPort: 443
       FromPort: 443
       CidrIp: !Ref PublicCidr
+
+  # Create an Instance Profile which gives the Kubernetes playground access to ECR (Elastic Container Registry)
+  K8sPlaygroundInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: "kubernetes-playground-instance-profile"
+      Roles:
+        - !Ref K8sPlaygroundECRRole
+
+  # IAM role granting an EC2 instance access to ECR
+  K8sPlaygroundECRRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: "Allow"
+          Principal:
+            Service:
+            - "ec2.amazonaws.com"
+          Action:
+          - "sts:AssumeRole"
+      Path: "/sandbox/"
+      Policies:
+        -
+          PolicyName: "K8sPlaygroundECRRole"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action: "ecr:*"
+                Resource: "*"

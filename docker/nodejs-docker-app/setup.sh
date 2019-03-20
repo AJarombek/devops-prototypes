@@ -68,3 +68,7 @@ docker container rm nodejs-app
 
 # Remove the image
 docker image rm nodejs-docker-app
+
+# ---------------------------
+# Kubernetes Playground Setup
+# ---------------------------
