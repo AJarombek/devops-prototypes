@@ -1,22 +1,8 @@
 #!/usr/bin/env bash
 
-# Setup for the Node.js Dockerized (Containerized) Application
+# Docker Playground Setup for the Node.js Application
 # Author: Andrew Jarombek
-# Date: 3/13/2019
-
-# -----------
-# Local Setup
-# -----------
-
-npm init
-npm i -S express
-
-# Start the application
-node main.js
-
-# -----------------------
-# Docker Playground Setup
-# -----------------------
+# Date: 3/20/2019
 
 git clone https://github.com/AJarombek/devops-prototypes.git
 cd devops-prototypes/docker/nodejs-docker-app/
@@ -68,7 +54,3 @@ docker container rm nodejs-app
 
 # Remove the image
 docker image rm nodejs-docker-app
-
-# ---------------------------
-# Kubernetes Playground Setup
-# ---------------------------

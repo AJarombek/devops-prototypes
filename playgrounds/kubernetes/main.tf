@@ -98,6 +98,8 @@ resource "aws_cloudformation_stack" "kubernetes-playground-cf-stack" {
     UserData = "${data.template_file.user-data-template.rendered}"
   }
 
+  capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]
+
   tags {
     Name = "kubernetes-playground-cf-stack"
   }

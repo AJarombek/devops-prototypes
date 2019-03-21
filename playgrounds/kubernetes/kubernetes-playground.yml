@@ -87,14 +87,19 @@ Resources:
             # Run the same command to verify the installations
             01Verify:
               command: apt-get --assume-yes install docker.io kubeadm kubectl kubelet kubernetes-cni
+            02ChangeDockerUnixGroup:
+              command: sudo usermod -a -G docker ubuntu
         installAWSCLI:
           commands:
-            00Install:
-              command: apt-get install -y awscli
+            00InstallPip:
+              command: apt install -y python3-pip
+            01InstallAwsCli:
+              command: pip3 install --upgrade awscli
     Properties:
       # us-east-1 Ubuntu
       ImageId: !Ref AMI
-      InstanceType: "t2.micro"
+      # Kubernetes requires the VM to have at least 2 CPUs
+      InstanceType: "t2.medium"
       IamInstanceProfile: !Ref K8sPlaygroundInstanceProfile
       KeyName: "sandbox-kubernetes-playground-key"
       NetworkInterfaces:
