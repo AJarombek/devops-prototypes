@@ -147,6 +147,26 @@ Resources:
       FromPort: -1
       CidrIp: !Ref PublicCidr
 
+  # Kubernetes Playground security group rule allowing inbound internet access over HTTP
+  K8sPlaygroundSecurityGroupIngressHTTP:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref K8sPlaygroundSecurityGroup
+      IpProtocol: tcp
+      ToPort: 80
+      FromPort: 80
+      CidrIp: !Ref PublicCidr
+
+  # Kubernetes Playground security group rule allowing inbound internet access over HTTPS
+  K8sPlaygroundSecurityGroupIngressHTTPS:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref K8sPlaygroundSecurityGroup
+      IpProtocol: tcp
+      ToPort: 443
+      FromPort: 443
+      CidrIp: !Ref PublicCidr
+
   # Kubernetes Playground security group rule allowing outbound internet access over HTTP
   K8sPlaygroundSecurityGroupEgressHTTP:
     Type: AWS::EC2::SecurityGroupEgress

@@ -164,7 +164,7 @@ Resources:
 
   # Docker Playground security group rule allowing inbound internet access over HTTPS
   DockerPlaygroundSecurityGroupIngressHTTPS:
-    Type: AWS::EC2::SecurityGroupEgress
+    Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !Ref DockerPlaygroundSecurityGroup
       IpProtocol: tcp

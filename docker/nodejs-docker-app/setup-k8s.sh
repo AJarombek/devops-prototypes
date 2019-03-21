@@ -15,6 +15,10 @@ cd devops-prototypes/docker/nodejs-docker-app/
 docker image build -t nodejs-docker-app:latest .
 docker image ls
 
+docker login
+docker image tag nodejs-docker-app:latest ajarombek/nodejs-docker-app:latest
+docker image push ajarombek/nodejs-docker-app:latest
+
 # Initialize a new Kubernetes cluster
 sudo kubeadm init
 

@@ -17,8 +17,8 @@ spec:
   containers:
     # Unique name for the container in the pod
   - name: nodejs-app
-    # Docker image to use for the container
-    image: 739088120071.dkr.ecr.us-east-1.amazonaws.com/nodejs-docker-app:latest
+    # Docker image to use for the container from DockerHub
+    image: ajarombek/nodejs-docker-app:latest
     # Configure a network port for a container
     ports:
       # Port to expose on the container IP
