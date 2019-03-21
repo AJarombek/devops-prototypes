@@ -55,3 +55,17 @@ kubectl describe pods nodejs-app
 
 # Delete an existing Pod
 kubectl delete pods nodejs-app
+
+# Execute a command on the Pod with the 'kubectl exec' command.  Check the running processes
+kubectl exec nodejs-app ps aux
+
+# Attach the command line to inside the Pod
+kubectl exec -it nodejs-app sh
+wget -S localhost:3000
+
+# Get information about the services
+kubectl get svc
+kubectl describe svc nodejs-app-service
+
+# Information about the Kubernetes cluster (such as IP addresses)
+kubectl cluster-info
