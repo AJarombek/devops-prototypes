@@ -2,27 +2,6 @@
 # Author: Andrew Jarombek
 # Date: 3/19/2019
 
-# Version of the Kubernetes API.  Services exist in the stable v1 version
-apiVersion: v1
-# What kind of object to deploy (in this case a Service)
-kind: Service
-metadata:
-  name: nodejs-app-service
-  labels:
-    zone: prod
-    version: v1.0.0
-    environment: sandbox
-spec:
-  type: NodePort
-  ports:
-  - port: 3000
-    nodePort: 80
-    protocol: TCP
-  selector:
-    app: nodejs-app
-
----
-
 # Version of the Kubernetes API.  Pods exist in the stable v1 version
 apiVersion: v1
 # What kind of object to deploy (in this case a Pod)
@@ -31,7 +10,7 @@ kind: Pod
 metadata:
   name: nodejs-app
   labels:
-    zone: prod
+    app: nodejs-app
     version: v1.0.0
     environment: sandbox
 spec:
