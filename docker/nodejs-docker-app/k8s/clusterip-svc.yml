@@ -5,17 +5,18 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: nodejs-app-nodeport-service
+  name: nodejs-app-clusterip-service
   labels:
     version: v1.0.0
     environment: sandbox
 spec:
-  selector:
-    matchLabels:
-      app: nodejs-app
   type: ClusterIP
   ports:
   - name: http
+    # The Service is exposed on this port internally within the cluster
     port: 80
-    targetPort: 80
+    # The port exposed by the application.  The service forwards requests to the Pod at this port
+    targetPort: 3000
     protocol: TCP
+  selector:
+    app: nodejs-app

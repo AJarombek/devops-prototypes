@@ -80,3 +80,12 @@ kubectl describe svc nodejs-app-service
 
 # Information about the Kubernetes cluster (such as IP addresses)
 kubectl cluster-info
+
+# Check the Proxy mode of the cluster.  Should return 'iptables'
+curl localhost:10249/proxyMode
+
+# Create a proxy server which directs traffic to the Kubernetes API.  The proxy server is accessible locally
+kubectl proxy --port=8080
+
+# Invoke the API
+curl localhost:8080/api/v1

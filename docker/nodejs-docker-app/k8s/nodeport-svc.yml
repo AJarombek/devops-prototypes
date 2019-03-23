@@ -13,8 +13,13 @@ spec:
   type: NodePort
   ports:
   - name: tcp
-    port: 3000
+    # Port on nodes in the cluster which proxy to the service
     nodePort: 30001
+    # Port exposed on the service for internal cluster use.  Requests to this port will be forwarded
+    # to the Pods matching the labels selected by this service.
+    port: 3000
+    # Port on the Pod that requests are sent to.  Applications must listen on this port.
+    targetPort: 3000
     protocol: TCP
   selector:
     matchLabels:

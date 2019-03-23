@@ -1,3 +1,12 @@
 # Create a Kubernetes configuration file for Ingress
 # Author: Andrew Jarombek
 # Date: 3/21/2019
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nodejs-app-ingress
+spec:
+  backend:
+    serviceName: nodejs-app-nodeport-service
+    servicePort: 80
