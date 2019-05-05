@@ -43,7 +43,7 @@ Metadata:
 
 Resources:
 
- # Create an EC2 instance for Docker testing running Amazon Linux 2
+  # Create an EC2 instance for Docker testing running Amazon Linux 2
   DockerPlaygroundInstance:
     Type: AWS::EC2::Instance
     Metadata:

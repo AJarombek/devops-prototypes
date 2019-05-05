@@ -1,0 +1,242 @@
+# CloudFormation template for an EC2 instance running MongoDB.
+# Parameters are supplied by Terraform.
+# Author: Andrew Jarombek
+# Date: 4/4/2019
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'An EC2 instance running MongoDB'
+
+Parameters:
+
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: "VPC to deploy the EC2 instance in"
+  SubnetId:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: "Subnet to deploy the EC2 instance in"
+  MyCidr:
+    Type: "String"
+    Description: "CIDR for my local environment"
+  PublicCidr:
+    Type: "String"
+    Description: "CIDR for all IP addresses"
+  AMI:
+    Type: "String"
+    Description: "AMI for the EC2 instance"
+  PublicKey:
+    Type: "String"
+    Description: "SSH public key file for connecting to GitHub private repos"
+  PrivateKey:
+    Type: "String"
+    Description: "SSH private key file for connecting to GitHub private repos"
+
+Metadata:
+
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    -
+      Label:
+        default: "Terraform AWS Data"
+      Parameters:
+      - VpcId
+      - SubnetId
+      - MyCidr
+      - PublicCidr
+      - AMI
+      - SSHKey
+    ParameterLabels:
+      VpcId:
+        default: "VPC to deploy the EC2 instance in"
+      SubnetId:
+        default: "Subnet to deploy the EC2 instance in"
+      MyCidr:
+        Type: "String"
+        Description: "CIDR for my local environment"
+      PublicCidr:
+        Type: "String"
+        Description: "CIDR for all IP addresses"
+      AMI:
+        Type: "String"
+        Description: "AMI for the EC2 instance"
+      PublicKey:
+        Type: "String"
+        Description: "SSH public key file for connecting to GitHub private repos"
+      PrivateKey:
+        Type: "String"
+        Description: "SSH private key file for connecting to GitHub private repos"
+
+Resources:
+
+  # Create a n EC2 instance with a MongoDB database on Amazon Linux 2
+  MongoDBInstance:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          default:
+            - "mongoDBFiles"
+            - "installMongoDB"
+            - "startMongoDB"
+            - "cloneGitRepo"
+            - "buildMongoDBDocuments"
+        installMongoDB:
+          commands:
+            00InstallMongoDB:
+              command: sudo yum -y install mongodb-org
+              cwd: "~"
+        startMongoDB:
+          commands:
+            00StartMongoDB:
+              command: sudo systemctl start mongod
+            01CheckMongoDBStatus:
+              command: sudo systemctl status mongod
+        cloneGitRepo:
+          commands:
+            00InstallGit:
+              command: sudo yum -y install git
+            01PrivateKeyAccess:
+              command: chmod 400 id_rsa
+              cwd: "/home/ec2-user/.ssh/"
+            02PrivateKeyAccess:
+              command: chmod 400 id_rsa
+              cwd: "/root/.ssh/"
+            03GitHubKey:
+              command: ssh-keyscan github.com >> gitHubKey
+              cwd: "/home/ec2-user/"
+            # Check if fingerprint matches the one on GitHub (https://help.github.com/en/articles/githubs-ssh-key-fingerprints)
+            04SSHFingerprint:
+              command: ssh-keygen -lf gitHubKey
+              cwd: "/home/ec2-user/"
+            05AddHost:
+              command: echo $(cat gitHubKey) >> /home/ec2-user/.ssh/known_hosts
+              cwd: "/home/ec2-user/"
+            06AddHostRoot:
+              command: echo $(cat gitHubKey) >> /root/.ssh/known_hosts
+              cwd: "/home/ec2-user/"
+            07CloneRepo:
+              test: git version
+              command: git clone git@github.com:AJarombek/jarombek-com-database.git
+              cwd: "/home/ec2-user/"
+        buildMongoDBDocuments:
+          commands:
+            00Build:
+              command: mongo < loadScripts.js
+              cwd: "/home/ec2-user/jarombek-com-database/"
+        mongoDBFiles:
+          files:
+            /etc/yum.repos.d/mongodb-org-3.4.repo:
+              content: |
+                [mongodb-org-3.4]
+                name=MongoDB Repository
+                baseurl=https://repo.mongodb.org/yum/amazon/2013.03/mongodb-org/3.4/x86_64/
+                gpgcheck=1
+                enabled=1
+                gpgkey=https://www.mongodb.org/static/pgp/server-3.4.asc
+            /root/.ssh/id_rsa:
+              content: !Ref PrivateKey
+              owner: root
+            /root/.ssh/id_rsa.pub:
+              content: !Ref PublicKey
+              owner: root
+            /home/ec2-user/.ssh/id_rsa:
+              content: !Ref PrivateKey
+              owner: ec2-user
+            /home/ec2-user/.ssh/id_rsa.pub:
+              content: !Ref PublicKey
+              owner: ec2-user
+    Properties:
+      # us-east-1 Amazon Linux 2
+      ImageId: !Ref AMI
+      InstanceType: "t2.micro"
+      KeyName: "jarombek-com-key"
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !Ref SubnetId
+          GroupSet:
+          - !Ref MongoDBSecurityGroup
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash
+            echo "Beginning UserData Step"
+            sudo yum install -y aws-cfn-bootstrap
+            /opt/aws/bin/cfn-init -v -s ${AWS::StackName} -r MongoDBInstance -c default --region ${AWS::Region}
+            echo "Finishing UserData Step"
+      Tags:
+        - Key: Name
+          Value: !Sub jarombek-com-mongodb
+        - Key: Application
+          Value: jarombek-com
+
+  MongoDBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "jarombek-com-mongodb-sg"
+      GroupDescription: "Security Group for the jarombek.com MongoDB instance"
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: jarombek-com-mongodb-sg
+        - Key: Application
+          Value: jarombek-com
+
+  # MongoDB security group rule allowing my computer to connect to the instance via SSH
+  MongoDBSecurityGroupIngressSSH:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref MongoDBSecurityGroup
+      IpProtocol: tcp
+      ToPort: 22
+      FromPort: 22
+      CidrIp: !Ref PublicCidr
+
+  # MongoDB security group rule allowing inbound traffic to the database
+  MongoDBSecurityGroupIngressDB:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref MongoDBSecurityGroup
+      IpProtocol: tcp
+      ToPort: 27017
+      FromPort: 27017
+      CidrIp: !Ref PublicCidr
+
+  # MongoDB security group rule allowing inbound traffic for ping
+  MongoDBSecurityGroupIngressICMP:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref MongoDBSecurityGroup
+      IpProtocol: icmp
+      ToPort: -1
+      FromPort: -1
+      CidrIp: !Ref PublicCidr
+
+  # MongoDB security group rule allowing outbound internet access over HTTP
+  MongoDBSecurityGroupEgressHTTP:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref MongoDBSecurityGroup
+      IpProtocol: tcp
+      ToPort: 80
+      FromPort: 80
+      CidrIp: !Ref PublicCidr
+
+  # MongoDB security group rule allowing outbound internet access over HTTPS
+  MongoDBSecurityGroupEgressHTTPS:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref MongoDBSecurityGroup
+      IpProtocol: tcp
+      ToPort: 443
+      FromPort: 443
+      CidrIp: !Ref PublicCidr
+
+  # MongoDB security group rule for cloning a git repo with SSH
+  MongoDBSecurityGroupEgressSSH:
+      Type: AWS::EC2::SecurityGroupEgress
+      Properties:
+        GroupId: !Ref MongoDBSecurityGroup
+        IpProtocol: tcp
+        ToPort: 22
+        FromPort: 22
+        CidrIp: !Ref PublicCidr

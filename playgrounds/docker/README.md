@@ -4,9 +4,10 @@ Infrastructure as code for an EC2 instance used as a Docker playground.  The inf
 a CloudFormation stack wrapped in a Terraform script.  In order to create the CloudFormation stack, run the following 
 Terraform commands:
 
-```
-terraform plan
+```bash
 terraform init
+terraform plan
+terraform approve -auto-approve
 ```
 
 Run the following command to delete the CloudFormation stack:
