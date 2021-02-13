@@ -1,5 +1,7 @@
 # devops-prototypes
 
+![Maintained Label](https://img.shields.io/badge/Maintained-Partially-yellow?style=for-the-badge)
+
 ### Overview
 
 Contains prototypes for my initial DevOps explorations in certain technologies.  Currently im using AWS to build cloud 
@@ -14,7 +16,8 @@ repository.
 
 | Directory Name    | Description                                                                 |
 |-------------------|-----------------------------------------------------------------------------|
-| `docker`          | Basic CLI commands for Docker.                                              |
+| `docker`          | Basic CLI commands and applications for Docker.                             |
 | `jenkins`         | Initial Jenkins exploration with the Job DSL Plugin.                        |
 | `playgrounds`     | Playground environments for Kubernetes and Docker on AWS.                   |
+| `samples`         | Small Infrastructure/Code samples which are deployed, tested, and removed.  |
 | `terraform`       | Initial Terraform explorations with Lambda, EC2, and S3 on AWS.             |

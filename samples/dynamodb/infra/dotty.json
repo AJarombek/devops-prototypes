@@ -1,0 +1,6 @@
+{
+  "id": {"N": "1"},
+  "name": {"S": "Dotty"},
+  "species": {"S": "Horse"},
+  "description": {"S": "Small spotted horse who loves to cuddle.  She also has beautiful flappy ears."}
+}
