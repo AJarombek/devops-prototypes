@@ -36,6 +36,26 @@ resource "aws_dynamodb_table" "table" {
     type = "N"
   }
 
+  attribute {
+    name = "name"
+    type = "S"
+  }
+
+  attribute {
+    name = "species"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name = "NameIndex"
+    hash_key = "name"
+    range_key = "species"
+    write_capacity = 10
+    read_capacity = 10
+    projection_type = "INCLUDE"
+    non_key_attributes = ["id"]
+  }
+
   tags = {
     Name = "stuffed-animals-table"
     Application = "dynamodb-sample"
