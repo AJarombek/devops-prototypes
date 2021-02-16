@@ -2,5 +2,6 @@
   "id": {"N": "2"},
   "name": {"S": "Lily"},
   "species": {"S": "Bear"},
-  "description": {"S": "A pillow pet who likes to hang out with Dotty, hibernate, and watch Packers games."}
+  "description": {"S": "A pillow pet who likes to hang out with Dotty, hibernate, and watch Packers games."},
+  "location": {"S": "New York, NY"}
 }

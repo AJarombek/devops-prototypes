@@ -53,7 +53,7 @@ resource "aws_dynamodb_table" "table" {
     write_capacity = 10
     read_capacity = 10
     projection_type = "INCLUDE"
-    non_key_attributes = ["id"]
+    non_key_attributes = ["description"]
   }
 
   tags = {

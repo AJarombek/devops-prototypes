@@ -9,6 +9,7 @@ from typing import List
 
 import boto3
 from boto3.dynamodb.types import Decimal
+from boto3.dynamodb.conditions import Key
 from boto3_type_annotations.dynamodb import Client, Table, ServiceResource
 
 
@@ -69,15 +70,81 @@ class TestTerraformInfra(unittest.TestCase):
 
         lily = items[0]
         self.assertEqual('Bear', lily.get('species'))
-        self.assertEqual('A pillow pet who likes to hang out with Dotty, hibernate, and watch Packers games.', lily.get('description'))
+        self.assertEqual(
+            'A pillow pet who likes to hang out with Dotty, hibernate, and watch Packers games.',
+            lily.get('description')
+        )
         self.assertEqual('Lily', lily.get('name'))
         self.assertEqual(Decimal(2), lily.get('id'))
+        self.assertEqual('New York, NY', lily.get('location'))
 
         dotty = items[1]
         self.assertEqual('Horse', dotty.get('species'))
-        self.assertEqual('Small spotted horse who loves to cuddle.  She also has beautiful flappy ears.', dotty.get('description'))
+        self.assertEqual(
+            'Small spotted horse who loves to cuddle.  She also has beautiful flappy ears.',
+            dotty.get('description')
+        )
         self.assertEqual('Dotty', dotty.get('name'))
         self.assertEqual(Decimal(1), dotty.get('id'))
+        self.assertEqual('Sleeping under a blanket', dotty.get('favorite_activity'))
+
+    def test_query_dynamodb_table(self):
+        """
+        Test that a query of the DynamoDB table for a stuffed animal by its ID returns the expected record.
+        """
+        table: Table = self.dynamodb_resource.Table('stuffed-animals')
+        response = table.query(
+            KeyConditionExpression=Key('id').eq(2)
+        )
+        items: List[dict] = response.get('Items')
+
+        self.assertEqual(1, len(items))
+
+        lily = items[0]
+        self.assertEqual('Bear', lily.get('species'))
+        self.assertEqual(
+            'A pillow pet who likes to hang out with Dotty, hibernate, and watch Packers games.',
+            lily.get('description')
+        )
+        self.assertEqual('Lily', lily.get('name'))
+        self.assertEqual(Decimal(2), lily.get('id'))
+        self.assertEqual('New York, NY', lily.get('location'))
+
+    def test_query_dynamodb_table_by_secondary_index(self):
+        """
+        Test that a query of the DynamoDB table for a stuffed animal named Dotty returns a horse who is always there to
+        comfort those who need her.
+        """
+
+        # Key queries are case sensitive, so this first query returns 0 results.
+        table: Table = self.dynamodb_resource.Table('stuffed-animals')
+        response = table.query(
+            IndexName='NameIndex',
+            KeyConditionExpression=Key('name').eq('dotty')
+        )
+        items: List[dict] = response.get('Items')
+        self.assertEqual(0, len(items))
+
+        # But the correctly cased query returns 1 result.
+        response = table.query(
+            IndexName='NameIndex',
+            KeyConditionExpression=Key('name').eq('Dotty')
+        )
+        items: List[dict] = response.get('Items')
+        self.assertEqual(1, len(items))
+
+        dotty = items[0]
+        self.assertEqual('Horse', dotty.get('species'))
+        self.assertEqual(
+            'Small spotted horse who loves to cuddle.  She also has beautiful flappy ears.',
+            dotty.get('description')
+        )
+        self.assertEqual('Dotty', dotty.get('name'))
+        self.assertEqual(1, dotty.get('id'))
+
+        # The secondary index won't include the 'favorite_activity' attribute due to the secondary index 'NameIndex'
+        # projection type and non-key attributes configuration not including it.
+        self.assertEqual(None, dotty.get('favorite_activity'))
 
 
 if __name__ == '__main__':
