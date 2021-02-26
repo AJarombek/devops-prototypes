@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"strconv"
 )
 
 func main() {
@@ -112,5 +113,42 @@ func main() {
 
 	if err != nil {
 		panic("Failed to create new items in DynamoDB (bulk insert).")
+	}
+
+	tableScan(client, tableName, 6)
+
+	deleteKeyMap := map[string]types.AttributeValue{
+		"id": &types.AttributeValueMemberN{Value: "6"},
+	}
+
+	deleteInput := &dynamodb.DeleteItemInput{
+		TableName: &tableName,
+		Key: deleteKeyMap,
+	}
+
+	// Although Grandma's blanket may not be a stuffed animal, she provides so much love & warmth.
+	_, err = client.DeleteItem(context.TODO(), deleteInput)
+
+	tableScan(client, tableName, 5)
+}
+
+// tableScan Scans a DynamoDB table for all its items.
+// It then checks to see whether the table contains the expected number of items.
+func tableScan(client *dynamodb.Client, tableName string, expectedCount int32) {
+	input := &dynamodb.ScanInput{
+		TableName: &tableName,
+	}
+
+	records, err := client.Scan(context.TODO(), input)
+
+	if err != nil {
+		panic("Table scan failed, " + err.Error())
+	}
+
+	if records.Count != expectedCount {
+		panic(
+			"The number of records in the table " + tableName + " is not as expected.  Expected " +
+				strconv.Itoa(int(expectedCount)) + ", was " + strconv.Itoa(int(records.Count)) + ".",
+		)
 	}
 }
