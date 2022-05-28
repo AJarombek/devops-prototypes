@@ -16,8 +16,10 @@ repository.
 
 | Directory Name    | Description                                                                 |
 |-------------------|-----------------------------------------------------------------------------|
+| `airflow`         | Docker compose setup for a basic Airflow environment.                       |
 | `docker`          | Basic CLI commands and applications for Docker.                             |
 | `jenkins`         | Initial Jenkins exploration with the Job DSL Plugin.                        |
 | `playgrounds`     | Playground environments for Kubernetes and Docker on AWS.                   |
 | `samples`         | Small Infrastructure/Code samples which are deployed, tested, and removed.  |
+| `splunk`          | Splunk environment and basic queries.                                       |
 | `terraform`       | Initial Terraform explorations with Lambda, EC2, and S3 on AWS.             |

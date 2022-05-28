@@ -1,0 +1,38 @@
+```Basic Splunk queries to perform on pre-existing indexes```
+```Author: Andrew Jarombek```
+```Date: 5/27/2022```
+
+```Get all events within different indexes created by default on splunk```
+
+index=_internal
+index=_audit
+index="_introspection"
+
+```Count the number of events from each source```
+
+index=_internal
+| stats count by source
+
+```Get events only from the 'health.log' source```
+
+index=_internal
+| where source LIKE "%health.log"
+
+```Count the audit actions grouped by user and action```
+
+index=_audit
+| stats count by user, action
+
+```View all the prior splunk searches, ordered newest first```
+
+index=_audit
+| where action="search"
+| where isnotnull(search)
+| sort -_time
+| table _time, search
+
+```View a chart of memory usage over time by Splunk```
+
+index="_introspection"
+| where isnotnull("data.pct_memory") AND component="PerProcess"
+| chart max(data.pct_memory) by _time

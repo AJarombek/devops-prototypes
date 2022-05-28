@@ -1,0 +1,87 @@
+{
+	"visualizations": {
+		"viz_fw7ABzRq": {
+			"type": "viz.column",
+			"dataSources": {
+				"primary": "ds_udYB36rR"
+			},
+			"title": "Memory Utilization"
+		},
+		"viz_ZyqC6k2p": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_m3CjFZ4u"
+			},
+			"title": "Prior Splunk Queries"
+		}
+	},
+	"dataSources": {
+		"ds_udYB36rR": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=\"_introspection\"\n| where isnotnull(\"data.pct_memory\") AND component=\"PerProcess\" \n| chart max(data.pct_memory) by _time"
+			},
+			"name": "memory_percent"
+		},
+		"ds_m3CjFZ4u": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=_audit\n| where action=\"search\"\n| where isnotnull(search)\n| sort -_time\n| table _time, search"
+			},
+			"name": "prior_queries"
+		}
+	},
+	"defaults": {
+		"dataSources": {
+			"ds.search": {
+				"options": {
+					"queryParameters": {
+						"latest": "$global_time.latest$",
+						"earliest": "$global_time.earliest$"
+					}
+				}
+			}
+		}
+	},
+	"inputs": {
+		"input_global_trp": {
+			"type": "input.timerange",
+			"options": {
+				"token": "global_time",
+				"defaultValue": "-24h@h,now"
+			},
+			"title": "Global Time Range"
+		}
+	},
+	"layout": {
+		"type": "grid",
+		"options": {},
+		"structure": [
+			{
+				"item": "viz_fw7ABzRq",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 0,
+					"w": 1200,
+					"h": 500
+				}
+			},
+			{
+				"item": "viz_ZyqC6k2p",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 500,
+					"w": 1200,
+					"h": 500
+				}
+			}
+		],
+		"globalInputs": [
+			"input_global_trp"
+		]
+	},
+	"description": "",
+	"title": "Splunk Internals"
+}
