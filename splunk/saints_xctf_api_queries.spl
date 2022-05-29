@@ -1,0 +1,50 @@
+```Splunk queries on a custom saints_xctf_api index```
+```Author: Andrew Jarombek```
+```Date: 5/27/2022```
+
+```First, upload the log file (logs/saints-xctf-api.log)```
+```https://docs.splunk.com/Documentation/Splunk/latest/SearchTutorial/GetthetutorialdataintoSplunk```
+
+```View all the raw logs```
+
+source="saints-xctf-api.log" index="saints_xctf_api"
+
+```Format the logs into a table with separate fields```
+
+source="saints-xctf-api.log" index="saints_xctf_api"
+| rex field=_raw "] \"(?<verb>[A-Z]+) (?<endpoint>.+) (?<http_version>.+)\" (?<status>[0-9]+)"
+| table _time verb, endpoint, http_version, status
+
+```Most commonly invoked endpoints```
+
+source="saints-xctf-api.log" index="saints_xctf_api"
+| rex field=_raw "] \"(?<verb>[A-Z]+) (?<endpoint>.+) (?<http_version>.+)\" (?<status>[0-9]+)"
+| table _time verb, endpoint, http_version, status
+| stats count by endpoint
+| sort -count
+
+```Number of API calls by status```
+
+source="saints-xctf-api.log" index="saints_xctf_api"
+| rex field=_raw "] \"(?<verb>[A-Z]+) (?<endpoint>.+) (?<http_version>.+)\" (?<status>[0-9]+)"
+| table _time verb, endpoint, http_version, status
+| where isnotnull(endpoint)
+| stats count by status
+
+```View only user endpoints```
+
+source="saints-xctf-api.log" index="saints_xctf_api"
+| rex field=_raw "] \"(?<verb>[A-Z]+) (?<endpoint>.+) (?<http_version>.+)\" (?<status>[0-9]+)"
+| table _time verb, endpoint, http_version, status
+| where isnotnull(endpoint) AND endpoint LIKE "/v2/users/%"
+
+```Most commonly viewed profiles```
+
+source="saints-xctf-api.log" index="saints_xctf_api"
+| rex field=_raw "] \"(?<verb>[A-Z]+) (?<endpoint>.+) (?<http_version>.+)\" (?<status>[0-9]+)"
+| table _time verb, endpoint, http_version, status
+| where isnotnull(endpoint) AND endpoint LIKE "/v2/users/%"
+| rex field=endpoint "/v2/users/(?<user>[A-Za-z0-9]+)$"
+| where user != "links"
+| stats count by user
+| sort -count

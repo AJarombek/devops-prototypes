@@ -18,7 +18,9 @@ docker container rm splunk
 
 ### Files
 
-| Filename                 | Description                                                                         |
-|--------------------------|-------------------------------------------------------------------------------------|
-| `basic_queries.spl`      | Basic Splunk queries using the pre-existing Splunk indexes.                         |
-| `splunk_internals.json`  | A Splunk dashboard displaying memory utilization and prior queries.                 |
+| Filename                      | Description                                                                         |
+|-------------------------------|-------------------------------------------------------------------------------------|
+| `logs`                        | Directory containing logs to manually upload to Splunk.                             |
+| `basic_queries.spl`           | Basic Splunk queries using the pre-existing Splunk indexes.                         |
+| `saints_xctf_api_queries.spl` | Basic Splunk queries using a custom `saints_xctf_api` Splunk index.                 |
+| `splunk_internals.json`       | A Splunk dashboard displaying memory utilization and prior queries.                 |
